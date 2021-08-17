@@ -1,25 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import BookList from "./BookList";
+// import BookList from "./BookList";
 import "../Styles/api.scss";
 
 require("dotenv").config();
 
 function Kakao() {
   const [bookList, setBookList] = useState<[]>([]);
-  const [search, setSearch] = useState("");
-  const [content, setContent] = useState("");
-  //임시
-  console.log(bookList);
-  console.log(content);
-  const pressEnter: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (e.key === "Enter") {
-      setContent(search);
-    }
-  };
-  const searchChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setSearch(e.target.value);
-  };
+  const [inputText, setInputText] = useState<string>("");
+  const [search, setSearch] = useState<string>("");
+  useEffect(() => {
+    bookSearch();
+  });
 
   const bookSearch = async () => {
     try {
@@ -29,34 +21,67 @@ function Kakao() {
             Authorization: `KakaoAK ${process.env.REACT_APP_KAKAO_KEY}`,
           },
           params: {
-            query: "미움받을 용기",
+            query: search,
             sort: "accuracy",
             page: 1,
             size: 20,
           },
         })
         .then((response) => {
-          setBookList(response.data);
+          setBookList(response.data.documents);
         });
     } catch (err) {
       console.log(err);
     }
   };
-  useEffect(() => {
-    bookSearch();
-  }, []);
+
+  const onEnter: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
+    if (e.key === "Enter") {
+      setSearch(inputText);
+    }
+  };
+
+  const TextUpdate: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    setInputText(e.target.value);
+  };
+
   return (
     <div className="total-view-port-inner-wrapper">
       <input
         placeholder="검색어를 입력하세요."
         type="search"
-        name="query"
-        value={search}
         className="search-bar"
-        onKeyDown={pressEnter}
-        onChange={searchChange}
+        name="search"
+        value={inputText}
+        onKeyDown={onEnter}
+        onChange={TextUpdate}
       />
-      <BookList />
+      <div className="list-total-warpper">
+        <div className="list-outter-wrapper">
+          {bookList.map((list: any, index: any) => {
+            return (
+              <div className="list-inner-wrapper">
+                <div key={index} className="list-image-wrapper">
+                  <a href={list.url}>
+                    <img
+                      src={list.thumbnail}
+                      alt={list.thumbnail}
+                      className="list-image-container"
+                    ></img>
+                  </a>
+                </div>
+                <div>
+                  <div className="list-title-container">{list.title}</div>
+                  {/* <div className="list-specification">{list.contents}</div> */}
+                  <div className="list-price-container">
+                    가격 : {list.price}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
