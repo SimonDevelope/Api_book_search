@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-// import BookList from "./BookList";
 import "../Styles/api.scss";
 
 require("dotenv").config();
@@ -10,10 +9,12 @@ function Kakao() {
   const [inputText, setInputText] = useState<string>("");
   const [search, setSearch] = useState<string>("");
   useEffect(() => {
-    bookSearch();
-  });
+    if (search.length > 0) {
+      bookSearch(search);
+    }
+  }, [search]);
 
-  const bookSearch = async () => {
+  const bookSearch = async (search: string) => {
     try {
       await axios
         .get("https://dapi.kakao.com/v3/search/book", {
@@ -23,12 +24,12 @@ function Kakao() {
           params: {
             query: search,
             sort: "accuracy",
-            page: 1,
             size: 20,
           },
         })
         .then((response) => {
           setBookList(response.data.documents);
+          setInputText("");
         });
     } catch (err) {
       console.log(err);
@@ -72,7 +73,6 @@ function Kakao() {
                 </div>
                 <div>
                   <div className="list-title-container">{list.title}</div>
-                  {/* <div className="list-specification">{list.contents}</div> */}
                   <div className="list-price-container">
                     가격 : {list.price}
                   </div>
