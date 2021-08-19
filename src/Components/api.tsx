@@ -1,26 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "../Styles/api.scss";
 
 require("dotenv").config();
-interface nextPageData {
-  next?: string;
+
+export interface BookProps {
+  is_end: string | boolean | undefined;
 }
 
 function Kakao() {
   const [bookList, setBookList] = useState<[]>([]);
-  const [nextList, setNextList] = useState<nextPageData>({ next: undefined });
   const [inputText, setInputText] = useState<string>("");
   const [search, setSearch] = useState<string>("");
-  const [moreData, setMoreData] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(0);
+  const loader: any = useRef();
 
   useEffect(() => {
     if (search.length > 0) {
-      bookSearch(search);
+      bookSearch(search, page);
     }
-  }, [search]);
+  }, [search, page]);
 
-  const bookSearch = async (search: string) => {
+  const bookSearch = async (search: string, page: number) => {
     try {
       await axios
         .get("https://dapi.kakao.com/v3/search/book", {
@@ -30,28 +31,40 @@ function Kakao() {
           params: {
             query: search,
             sort: "accuracy",
-            page: 1,
+            page: page,
             size: 20,
           },
         })
         .then((response) => {
           setBookList(response.data.documents);
+          console.log(page);
           setInputText("");
-          setNextList(response.data.meta.is_end);
-          console.log(nextList);
         });
     } catch (err) {
       console.log(err);
     }
   };
 
-  const loadMoreData = async () => {
-    await axios.get(nextList.next).then((response) => {
-      const loadedData = response.data.documents;
-      const addUpData = bookList.concat(...loadedData);
-      setBookList(addUpData);
-    });
-  };
+  const handleObserver = useCallback((entries) => {
+    const target = entries[0];
+    if (target.isIntersecting) {
+      setPage((prev) => prev + 1);
+    }
+  }, []);
+
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: "20px",
+      threshold: 0,
+    };
+
+    const observer = new IntersectionObserver(handleObserver, option);
+    if (loader.current) {
+      observer.observe(loader.current);
+    }
+    console.log(loader);
+  }, [handleObserver]);
 
   const onEnter: React.KeyboardEventHandler<HTMLInputElement> = (e) => {
     if (e.key === "Enter") {
@@ -76,10 +89,10 @@ function Kakao() {
       />
       <div className="list-total-warpper">
         <div className="list-outter-wrapper">
-          {bookList.map((list: any, index: any) => {
+          {bookList.map((list: any, index) => {
             return (
-              <div className="list-inner-wrapper">
-                <div key={index} className="list-image-wrapper">
+              <div className="list-inner-wrapper" key={index}>
+                <div className="list-image-wrapper">
                   <a href={list.url}>
                     <img
                       src={list.thumbnail}
@@ -97,6 +110,7 @@ function Kakao() {
               </div>
             );
           })}
+          <div ref={loader}></div>
         </div>
       </div>
     </div>
