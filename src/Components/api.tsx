@@ -13,6 +13,7 @@ function Kakao() {
   const [inputText, setInputText] = useState<string>("");
   const [search, setSearch] = useState<string>("");
   const [page, setPage] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
   const loader: any = useRef();
 
   useEffect(() => {
@@ -23,6 +24,7 @@ function Kakao() {
 
   const bookSearch = async (search: string, page: number) => {
     try {
+      await setLoading(loading);
       await axios
         .get("https://dapi.kakao.com/v3/search/book", {
           headers: {
@@ -43,6 +45,7 @@ function Kakao() {
     } catch (err) {
       console.log(err);
     }
+    setBookList((prev) => [...prev, ...bookList]);
   };
 
   const handleObserver = useCallback((entries) => {
