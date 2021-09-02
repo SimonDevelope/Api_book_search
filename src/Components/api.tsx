@@ -41,20 +41,21 @@ function Kakao() {
     } catch (err) {
       console.log(err);
     }
+    setLoading(loading);
     setBookList((prev) => [...prev, ...bookList]);
   };
-
+  console.log(bookList);
   const handleObserver = useCallback((entries) => {
     const target = entries[0];
     if (target.isIntersecting) {
-      setPage((prev) => prev + 1);
+      setPage((page) => page + 1);
     }
   }, []);
 
   useEffect(() => {
     const option = {
       root: null,
-      rootMargin: '20px',
+      rootMargin: '100px',
       threshold: 0,
     };
 
@@ -63,6 +64,8 @@ function Kakao() {
       observer.observe(loader.current);
     }
     console.log(loader);
+
+    return () => observer && observer.disconnect();
   }, [handleObserver]);
 
   const onEnter: React.KeyboardEventHandler<HTMLInputElement> = (e) => {

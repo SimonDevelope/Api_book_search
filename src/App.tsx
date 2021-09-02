@@ -1,7 +1,7 @@
-import React from "react";
-import Api from "./Components/api";
-import "./Styles/reset.scss";
-import "./Styles/App.scss";
+import React from 'react';
+import Api from './Components/api';
+import './Styles/reset.scss';
+import './Styles/App.scss';
 
 function App() {
   return (
